@@ -55,8 +55,8 @@ async function makeBet(req, res) {
         $addToSet: {
             players: {
                 _id: req.query.userid,
-                Amount: req.query.bet,
-                AutoStop: req.query.choose,
+                Bet: req.query.bet,
+                Choose: req.query.choose,
                 User: req.query.userid
             }
         }
@@ -84,7 +84,7 @@ async function update() {
                 let hilo = values[state.card._type] < values[card._type] ? 'hi' : 'lo';
                 if (card._type == player.Choose || card.color == player.Choose || hilo == player.Choose || (card._type >= '2' && card._type <= '9' && player.Choose == '2-9')) {
                     modeles.User.findOne({ _id: player.User }, async (err, user) => {
-                        if (err) return res.send({ error: true, message: err });
+                        if (err) return;
                         modeles.User.findOneAndUpdate({ _id: player.User }, { Balance: user.Balance + player.Bet * coefficients[player.Choose] }, {}, () => { });
                     });
                 }

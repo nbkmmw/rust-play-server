@@ -56,6 +56,7 @@ const HiloState = new mongoose.Schema({
 const WheelState = new mongoose.Schema({
     timeToStart: Number,
     Items: [{ color: String, coef: Number }],
+    choosedItem: { color: String, coef: Number },
     players:
         [
             {

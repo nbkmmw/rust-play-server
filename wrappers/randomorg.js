@@ -18,7 +18,7 @@ async function getRandomFloat(min, max) {
     //return (Math.random() * (max - min) + min);
 }
 async function getRandomInteger(min, max) {
-
+    /*
     let options = {
         method: 'POST',
         headers: {
@@ -41,7 +41,7 @@ async function getRandomInteger(min, max) {
     await fetch("https://api.random.org/json-rpc/1/invoke", options)
         .then(res => res.json())
         .then(json => { return json['result']['random']['data'][0] });
-
+    */
     return Number(Math.random() * (max - min) + min).toFixed(0);
 }
 

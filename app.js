@@ -8,7 +8,7 @@ const port = 3000;
 const games = {
   Crash: require('./games/crash').game,
   Hilo: require('./games/hilo').game,
-
+  Wheel: require('./games/wheel').game
 };
 const modules = {
   Auth: require('./modules/auth').module,
@@ -17,7 +17,7 @@ const modules = {
 
 mongoose.Promise = global.Promise;
 
-mongoose.connect(`mongodb://localhost/3453hrarj2dhbhse43`, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(`mongodb://localhost/3453hrarje2dhbhsre43`, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('MongoDB has started'))
   .catch(e => console.log(e));
 
@@ -41,6 +41,10 @@ app.get('/games/crash/makeBet', games.Crash.addPlayer);
 app.get('/games/hilo/getState', games.Hilo.getState);
 
 app.get('/games/hilo/makeBet', games.Hilo.makeBet);
+
+app.get('/games/wheel/getState', games.Wheel.getState);
+
+app.get('/games/wheel/makeBet', games.Wheel.makeBet);
 
 app.get("/auth/steam", modules.Auth.steam.auth);
 
