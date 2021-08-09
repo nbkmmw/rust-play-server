@@ -1,50 +1,58 @@
 const modeles = require('../modeles').modeles;
 const random = require('../wrappers/randomorg');
+const utils = require('../utils');
+const crypto = require('crypto')
 
 async function update() {
     modeles.WheelState.findOne({}, async (err, state) => {
         if (err || !state) return;
         if (state.timeToStart == 0) {
+            state.players.forEach(player => {
+                if (state.choosedItem == player.Choose) {
+                    modeles.User.findOne({ _id: player.User }, async (err, user) => {
+                        if (err) return;
+                        modeles.User.findOneAndUpdate({ _id: player.User }, {
+                            Balance: (user.Balance + player.Bet * state.choosedItem).toFixed(2),
+                            totalWin: (user.totalWin + player.Bet * choosedItem).toFixed(2)
+                        }, {}, () => { });
+                    });
+                }
+            });
+
             let items = [];
+            items.length = 14;
 
             for (let i = 0; i < 14; i++) {
-                let val = await random.getRandomInteger(0, 8);
+                let val = random.getRandomInteger(0, 10);
                 switch (Number(val)) {
                     default:
-                        items[i] = { color: "grey", coef: 2 }
+                        items[i] = 2
                         break;
                     case 4:
-                        items[i] = { color: "red", coef: 3 }
-                        break;
                     case 5:
-                        items[i] = { color: "red", coef: 3 }
-                        break;
                     case 6:
-                        items[i] = { color: "yellow", coef: 5 }
+                        items[i] = 3
                         break;
                     case 7:
-                        items[i] = { color: "yellow", coef: 5 }
-                        break;
                     case 8:
-                        items[i] = { color: "orange", coef: 20 }
+                    case 9:
+                        items[i] = 5
+                        break;
+                    case 10:
+                        items[i] = 50
                         break;
 
                 }
             }
-            let index = Math.floor(Math.random() * items.length);
-            let choosedItem = items[index];
-
-            state.players.forEach(player => {
-                if (choosedItem.color == player.Choose) {
-                    modeles.User.findOne({ _id: player.User }, async (err, user) => {
-                        if (err) return;
-                        modeles.User.findOneAndUpdate({ _id: player.User }, { Balance: user.Balance + player.Bet * choosedItem.coef }, {}, () => { });
-                    });
-                }
-            });
-            modeles.WheelState.findOneAndUpdate({}, { Items: items, choosedItem: choosedItem, players: [], timeToStart: 15 }, {}, () => { });
-
-
+            let choosedItem = items[0];
+            modeles.WheelState.findOneAndUpdate({}, {
+                Items: items.slice(),
+                choosedItem: choosedItem,
+                players: [],
+                timeToStart: 25,
+                Hash: crypto.createHash('sha1').update(Date.now().toString()).digest('hex'),
+                Id: state.Id + 1
+            }, {}, () => { });
         }
         else {
             modeles.WheelState.findOneAndUpdate({}, { timeToStart: (state.timeToStart - 0.01).toFixed(2) }, {}, () => { });
@@ -59,9 +67,11 @@ async function getState(req, res) {
         if (!state) {
             state = new modeles.WheelState({
                 timeToStart: 15,
-                Items: [],
-                choosedItem: { color: 'none', coef: 0 },
-                players: []
+                items: [],
+                choosedItem: 0,
+                players: [],
+                Hash: '',
+                Id: 0
             });
             state.save()
             return res.send(state);
@@ -73,23 +83,35 @@ async function getState(req, res) {
 }
 
 async function makeBet(req, res) {
-    modeles.WheelState.findOneAndUpdate({}, {
-        $addToSet: {
-            players: {
-                _id: req.query.userid,
-                Bet: req.query.bet,
-                AutoStop: req.query.choose,
-                User: req.query.userid
+    if (!req.session.user) return res.send({ error: true, message: "no authorized user" })
+    modeles.User.findOne({ _id: req.session.user }, (err, user) => {
+        if (!(user.Balance - req.query.bet >= 0))
+            return res.send({ error: true, message: 'not enough money' })
+        modeles.WheelState.findOne({}, (err, state) => {
+            if (!utils.containsId(state.players, user._id)) {
+                modeles.WheelState.findOneAndUpdate({}, {
+                    $addToSet: {
+                        players: {
+                            _id: user._id,
+                            Bet: req.query.bet,
+                            Choose: req.query.choose,
+                            User: user._id,
+                            Username: user.Username,
+                            Avatar: user.Avatar
+                        }
+                    }
+                },
+                    {},
+                    () => { }
+                );
+                modeles.User.findOneAndUpdate({ _id: user._id }, { Balance: (user.Balance - req.query.bet).toFixed(2), gamesPlayed: user.gamesPlayed + 1 }, {}, () => { });
+                return res.send({ error: false })
             }
-        }
-    },
-        {},
-        () => { }
-    );
-    modeles.User.findOne({ _id: req.query.userid }, (err, user) => {
-        if (err || !user) return;
-        modeles.User.findOneAndUpdate({ _id: req.query.userid }, { Balance: user.Balance - req.query.bet }, {}, () => { });
-    });
+            return res.send({ error: true, message: 'player with this id already playing' })
+        })
+    })
+
+
 }
 
 const wheel = {

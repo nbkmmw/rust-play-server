@@ -1,23 +1,23 @@
 const fetch = require('node-fetch');
-const apikey = "a9bec6be-5741-407a-be4f-06bbc7e31990";
+const utils = require('../utils')
+const apikey = utils.randomorg_api_key;
 /**
  * 
  * @param {Number} min 
  * @param {Number} max 
  */
-async function getRandomFloat(min, max) {
-
-    let integer = Number(await getRandomInteger(min.toFixed(0), max.toFixed(0)));
-    let float = Number(await getRandomInteger(
-        ((min % 1) * 100).toFixed(0),
-        ((max % 1) * 100).toFixed(0) != 0 ? ((max % 1) * 100).toFixed(0) : 99
-    )) / 100;
-    let result = integer + float;
-    return result;
-
-    //return (Math.random() * (max - min) + min);
+function randomFloat(min, max) {
+    let integer = randomInteger(min, max)
+    let float = randomInteger(
+        0,
+        (max % 1).toFixed(2) * 100 ? (max % 1).toFixed(2) * 100 : 99
+    ) / 100
+    let result = integer + float
+    result > max ? result -= 1 : result
+    return result
 }
-async function getRandomInteger(min, max) {
+
+function randomInteger(min, max) {
 
     let options = {
         method: 'POST',
@@ -38,16 +38,17 @@ async function getRandomInteger(min, max) {
         })
     };
 
-    await fetch("https://api.random.org/json-rpc/1/invoke", options)
-        .then(res => res.json())
-        .then(json => { return json['result']['random']['data'][0] });
+    //await fetch("https://api.random.org/json-rpc/1/invoke", options)
+    //    .then(res => res.json())
+    //    .then(json => { return json['result']['random']['data'][0] });
 
-    //return Number(Math.random() * (max - min) + min).toFixed(0);
+    let rand = min + Math.random() * (max + 1 - min);
+    return Math.floor(rand);
 }
 
 async function getRandomItem(...items) {
     return items[Math.floor(Math.random() * items.length)];
 }
-exports.getRandomInteger = getRandomInteger;
-exports.getRandomFloat = getRandomFloat;
+exports.getRandomInteger = randomInteger;
+exports.getRandomFloat = randomFloat;
 exports.getRandomItem = getRandomItem;

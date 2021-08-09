@@ -14,11 +14,14 @@ async function getMessages(req, res) {
 }
 
 async function sendMessage(req, res) {
+    if (!req.body.lang || !req.body.username || !req.body.avatar || !req.body.message) return res.send({ error: true, message: "incorrect data" })
+    let time_raw = new Date(Date.now())
+    let time = time_raw.getHours().toString().padStart(2, "0") + ":" + time_raw.getMinutes().toString().padStart(2, "0")
     modeles.Chat.findOneAndUpdate({ lang: req.body.lang }, {
         $push: {
             buffer: {
-                $each: [{ Sender: req.body.sender, Message: req.body.message }],
-                $slice: -50
+                $each: [{ username: req.body.username, avatar: req.body.avatar, message: req.body.message, time: time }],
+                $slice: -30
             }
         }
     }, {}, async (err, chat) => {
