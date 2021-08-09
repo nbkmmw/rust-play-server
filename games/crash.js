@@ -25,6 +25,10 @@ async function addPlayer(req, res) {
 }
 
 async function getState(req, res) {
+    return res.send((await getCrashState()))
+}
+
+async function getCrashState() {
     modeles.CrashState.findOne({}, function (err, state) {
         if (!state) {
             state = new modeles.CrashState({
@@ -38,10 +42,10 @@ async function getState(req, res) {
                 runningTime: 0
             });
             state.save()
-            return res.send(state);
+            return (state);
         }
         else {
-            return res.send(state);
+            return (state);
         }
     });
 }
@@ -59,10 +63,10 @@ async function update() {
                     isRunning: state.timeToRun == 0.01 ? true : false,
 
                     stop_coefficient: state.timeToRun == 0.01 ? Math.min(
-                        Number(await random.getRandomFloat(2, 10)).toFixed(2),
-                        Number(await random.getRandomFloat(2, 10)).toFixed(2),
-                        Number(await random.getRandomFloat(2, 10)).toFixed(2),
-                        Number(await random.getRandomFloat(2, 10)).toFixed(2),
+                        Number(await random.getRandomFloat(2, 10)).toFixed(3),
+                        Number(await random.getRandomFloat(2, 10)).toFixed(3),
+                        Number(await random.getRandomFloat(2, 10)).toFixed(3),
+                        Number(await random.getRandomFloat(2, 10)).toFixed(3),
                     ) : state.stop_coefficient,
                     runningTime: 0,
                     current_coefficient: 0
@@ -82,9 +86,9 @@ async function update() {
                     });
             else if (state.isRunning) {
                 modeles.CrashState.findOneAndUpdate({}, {
-                    runningTime: (state.runningTime + 0.01).toFixed(2),
-                    isRunning: state.runningTime == (state.stop_coefficient * 1).toFixed(2) ? false : true,
-                    current_coefficient: (state.current_coefficient + 0.01).toFixed(2)
+                    runningTime: (state.runningTime + 0.005).toFixed(2),
+                    isRunning: state.current_coefficient == (state.stop_coefficient * 1).toFixed(3) ? false : true,
+                    current_coefficient: (state.current_coefficient + 0.005).toFixed(3)
                 },
                     {},
                     (err, state) => {
@@ -111,6 +115,7 @@ const crash = {
     addPlayer: addPlayer,
     getState: getState,
     changeMode: changeMode,
-    update: update
+    update: update,
+    getCrashState: getCrashState
 };
 exports.game = crash;

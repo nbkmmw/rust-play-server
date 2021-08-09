@@ -6,7 +6,6 @@ async function update() {
         if (err || !state) return;
         if (state.timeToStart == 0) {
             let items = [];
-            items.length = 14;
 
             for (let i = 0; i < 14; i++) {
                 let val = await random.getRandomInteger(0, 8);
@@ -43,7 +42,7 @@ async function update() {
                     });
                 }
             });
-            modeles.WheelState.findOneAndUpdate({}, { items: items, choosedItem: choosedItem, players: [], timeToStart: 15 }, {}, () => { });
+            modeles.WheelState.findOneAndUpdate({}, { Items: items, choosedItem: choosedItem, players: [], timeToStart: 15 }, {}, () => { });
 
 
         }
@@ -60,7 +59,7 @@ async function getState(req, res) {
         if (!state) {
             state = new modeles.WheelState({
                 timeToStart: 15,
-                items: [],
+                Items: [],
                 choosedItem: { color: 'none', coef: 0 },
                 players: []
             });
