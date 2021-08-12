@@ -46,7 +46,7 @@ function randomInteger(min, max) {
     return Math.floor(rand);
 }
 
-async function getRandomItem(...items) {
+function getRandomItem(...items) {
     return items[Math.floor(Math.random() * items.length)];
 }
 exports.getRandomInteger = randomInteger;

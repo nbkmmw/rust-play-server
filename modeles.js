@@ -194,15 +194,61 @@ const CoinflipState = new mongoose.Schema({
     rooms: [
         {
             id: Number,
-            firstPlayer: String,
-            secondPlayer: String,
-            bank: Number,
-            winner: String,
+            firstPlayer: {
+                _id: String,
+                User: String,
+                Bet: {
+                    Count: Number,
+                    Price: Number,
+                    Items: [
+                        {
+                            Price: Number,
+                            Name: String,
+                            Img: String
+                        }
+                    ]
+                },
+                Username: String,
+                Avatar: String
+            },
+            secondPlayer: {
+                _id: String,
+                User: String,
+                Bet: {
+                    Count: Number,
+                    Price: Number,
+                    Items: [
+                        {
+                            Price: Number,
+                            Name: String,
+                            Img: String
+                        }
+                    ]
+                },
+                Username: String,
+                Avatar: String
+            },
+            bank: {
+                totalPrice: Number,
+                totalCount: Number,
+                items: [{
+                    Price: Number,
+                    Name: String,
+                    Img: String,
+                    Count: Number
+                }]
+            },
+            winner: {
+                type: String,
+                ref: 'User'
+            },
             timeToRun: Number,
             timeToClose: Number,
-            isEnded: Boolean
+            isEnded: Boolean,
+            isWaiting: Boolean
         }
-    ]
+    ],
+    lastid: Number
 })
 const Chat = new mongoose.Schema({
     lang: String,
